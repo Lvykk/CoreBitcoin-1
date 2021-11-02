@@ -3,7 +3,6 @@
 #import <Foundation/Foundation.h>
 #if TARGET_OS_IPHONE
 #import <UIKit/UIKit.h>
-#import <AVFoundation/AVFoundation.h>
 #endif
 
 @interface BTCQRCode : NSObject
@@ -30,19 +29,6 @@
  */
 + (UIView*) scannerViewWithBlock:(void(^)(NSString* message))detectionBlock;
 
-
-/*!
- * Returns a scanning view and retains a detection block.
- *
- * Block is called for every QR code detected. To stop recognition, remove view from the window.
- *
- * Block is released when view is removed from window.
- *
- * The device position helps selecting the camera (front or back)
- */
-+ (UIView*) scannerViewUsingDevice:(AVCaptureDevicePosition) devicePosition
-                       orientation:(AVCaptureVideoOrientation) orientation
-                             block:(void(^)(NSString* message))detectionBlock;
 #endif
 
 @end

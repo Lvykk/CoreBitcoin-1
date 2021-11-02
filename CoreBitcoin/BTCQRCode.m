@@ -7,8 +7,6 @@
 @property (nonatomic, strong) AVCaptureSession *session;
 @property (nonatomic, strong) AVCaptureVideoPreviewLayer *previewLayer;
 @property (nonatomic, strong) dispatch_queue_t sessionQueue;
-@property (nonatomic, assign) AVCaptureDevicePosition cameraPosition;
-@property (nonatomic, assign) AVCaptureVideoOrientation cameraOrientation;
 - (id) initWithDetectionBlock:(void(^)(NSString* message))detectionBlock;
 @end
 #endif
@@ -47,21 +45,9 @@
     return image;
 }
 
-+ (UIView*) scannerViewUsingDevice:(AVCaptureDevicePosition) devicePosition
-                       orientation:(AVCaptureVideoOrientation) orientation
-                             block:(void(^)(NSString* message))detectionBlock {
-    BTCQRCodeScannerView *view = [[BTCQRCodeScannerView alloc] initWithDetectionBlock:detectionBlock];
-    view.cameraPosition = devicePosition;
-    view.cameraOrientation = orientation;
-    return view;
-}
-
 + (UIView*) scannerViewWithBlock:(void(^)(NSString* message))detectionBlock {
-    return [self scannerViewUsingDevice:AVCaptureDevicePositionUnspecified
-                            orientation:0
-                                  block:detectionBlock];
+    return [[BTCQRCodeScannerView alloc] initWithDetectionBlock:detectionBlock];
 }
-
 #endif
 
 @end
@@ -70,7 +56,6 @@
 
 #if TARGET_OS_IPHONE
 @implementation BTCQRCodeScannerView
-@synthesize cameraPosition, cameraOrientation;
 
 - (id) initWithDetectionBlock:(void(^)(NSString* message))detection {
     if (self = [super initWithFrame:[UIScreen mainScreen].bounds]) {
@@ -100,24 +85,9 @@
     }
 }
 
-- (AVCaptureDevice *)deviceFromPosition:(AVCaptureDevicePosition) position {
-    if (position != AVCaptureDevicePositionUnspecified) {
-        NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
-        for (AVCaptureDevice *device in devices) {
-            if ([device position] == position) {
-                return device;
-            }
-        }
-    }
-    return [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-}
-
 - (void) prepareScanner {
-    [self prepareScannerWithDevice:[self deviceFromPosition:self.cameraPosition]];
-}
-
-- (void) prepareScannerWithDevice:(AVCaptureDevice *)device {
     NSError *error = nil;
+    AVCaptureDevice *device = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
     AVCaptureDeviceInput *input = [AVCaptureDeviceInput deviceInputWithDevice:device error:&error];
     AVCaptureMetadataOutput *output = [AVCaptureMetadataOutput new];
 
@@ -162,13 +132,6 @@
 
     dispatch_async(self.sessionQueue, ^{
         [self.session startRunning];
-        
-        if (self.cameraOrientation != 0) {
-            //Get Preview Layer connection
-            AVCaptureConnection *previewLayerConnection=self.previewLayer.connection;
-            if ([previewLayerConnection isVideoOrientationSupported])
-                [previewLayerConnection setVideoOrientation:self.cameraOrientation];
-        }
     });
 }
 

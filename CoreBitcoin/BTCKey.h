@@ -8,6 +8,9 @@
 @class BTCPublicKeyAddressTestnet;
 @class BTCPrivateKeyAddress;
 @class BTCPrivateKeyAddressTestnet;
+@class BTCScriptHashAddressTestnet;
+@class BTCScriptHashAddress;
+@class BTCScript;
 
 // BTCKey encapsulates EC public and private keypair (or only public part) on curve secp256k1.
 // You can sign data and verify signatures.
@@ -76,6 +79,10 @@
 - (NSData*) signatureForHash:(NSData*)hash hashType:(BTCSignatureHashType)hashType;
 - (NSData*) signatureForHash:(NSData*)hash withHashType:(BTCSignatureHashType)hashType DEPRECATED_ATTRIBUTE;
 
+// just for eos
+- (NSData*) eosCompactSignatureForHash:(NSData*)hash;
++ (instancetype) eosEcRecover:(NSData*)signature forHash:(NSData*)hash;
+
 // [RFC6979 implementation](https://tools.ietf.org/html/rfc6979).
 // Returns 32-byte `k` nonce generated deterministically from the `hash` and the private key.
 // Returns a mutable data to make it clearable.
@@ -101,8 +108,15 @@
 @property(nonatomic, readonly) BTCPublicKeyAddressTestnet* addressTestnet;
 
 // Returns address for a public key (Hash160(pubkey)).
-@property(nonatomic, readonly) BTCPublicKeyAddress* uncompressedPublicKeyAddress;
 @property(nonatomic, readonly) BTCPublicKeyAddress* compressedPublicKeyAddress;
+@property(nonatomic, readonly) BTCPublicKeyAddress* uncompressedPublicKeyAddress;
+@property(nonatomic, readonly) BTCPublicKeyAddressTestnet* compressedPublicKeyAddressTestnet;
+@property(nonatomic, readonly) BTCPublicKeyAddressTestnet* uncompressedPublicKeyAddressTestnet;
+
+// Returns segwit address for a public key (Hash160(OP_0 Hash160(compressedPubKey))).
+@property(nonatomic, readonly) BTCScriptHashAddress* witnessAddress;
+@property(nonatomic, readonly) BTCScriptHashAddressTestnet* witnessAddressTestnet;
+@property(nonatomic, readonly) BTCScript* witnessRedeemScript;
 
 // Private key encoded in sipa format (base58 with compression flag).
 @property(nonatomic, readonly) BTCPrivateKeyAddress* privateKeyAddress;
